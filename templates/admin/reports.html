@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% set perms = session.get('permissions') or [] %}
+{% set is_full_admin = 'users.manage' in perms %}
+
+{% block title %}Statistics — Smart Campus{% endblock %}
+
+{% block content %}
+<div
+    id="sd-reports-app"
+    class="sd-reports-root"
+    data-summary-url="{{ url_for('api.api_report_summary') }}"
+    data-tickets-url="{{ url_for('api.api_tickets') }}"
+>
+    <div class="sd-page-header mb-4">
+        <div>
+            <p class="sd-kicker mb-1">{% if is_full_admin %}Administration{% else %}Service desk{% endif %}</p>
+            <h1 class="sd-page-title mb-0">Statistics</h1>
+            <p class="sd-page-sub text-muted mb-0">
+                Administrators only: queue summary and ticket list via JavaScript <code>fetch()</code> and JSON endpoints.
+                Service desk staff use <strong>All tickets</strong> for the live queue. Ticket <strong>resolution</strong> (when closing) is separate from this screen.
+            </p>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-end">
+            <div>
+                <label class="form-label small text-muted mb-0" for="sd-reports-filter-status">Filter by status</label>
+                <select id="sd-reports-filter-status" class="form-select form-select-sm" aria-label="Filter statistics by ticket status">
+                    <option value="">All statuses</option>
+                    {% for s in statuses %}
+                    <option value="{{ s }}">{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="button" class="btn btn-outline-primary" id="sd-reports-refresh">Refresh data</button>
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-secondary">
+                {% if is_full_admin %}Back to admin overview{% else %}Back to all tickets{% endif %}
+            </a>
+        </div>
+    </div>
+
+    <p id="sd-reports-status" class="small text-muted mb-3" aria-live="polite">Initializing…</p>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card sd-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h6 text-uppercase text-muted mb-3">Tickets by status</h2>
+                    <div id="sd-report-summary-body"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card sd-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h6 text-uppercase text-muted mb-3">All tickets (detailed from API)</h2>
+                    <div class="table-responsive" id="sd-report-tickets-body"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

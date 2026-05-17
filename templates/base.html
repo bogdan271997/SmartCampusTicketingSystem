@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Smart Campus Service Desk{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="sd-body d-flex flex-column min-vh-100">
+{% from '_macros.html' import role_badge %}
+
+{% if session.get('user_id') %}
+<nav class="navbar navbar-expand-lg sd-navbar shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-semibold d-flex align-items-center gap-2" href="{{ url_for('admin.admin_dashboard') if 'dashboard.admin' in (session.get('permissions') or []) else url_for('user.user_dashboard') }}">
+            <span class="sd-logo-dot"></span>
+            <span class="d-flex flex-column lh-sm">
+                <span>Smart Campus</span>
+                <span class="sd-brand-sub small fw-normal opacity-75">Service Desk</span>
+            </span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navMain">
+            <ul class="navbar-nav me-auto mt-3 mt-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link px-lg-3" href="{{ url_for('user.user_dashboard') }}">My tickets</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-lg-3" href="{{ url_for('user.create_ticket') }}">New ticket</a>
+                </li>
+                {% if 'dashboard.admin' in (session.get('permissions') or []) %}
+                <li class="nav-item">
+                    <a class="nav-link px-lg-3" href="{{ url_for('admin.admin_dashboard') }}">
+                        {%- if 'users.manage' in (session.get('permissions') or []) -%}
+                        Admin overview
+                        {%- else -%}
+                        All tickets
+                        {%- endif -%}
+                    </a>
+                </li>
+                {% endif %}
+                {% if 'users.manage' in (session.get('permissions') or []) %}
+                <li class="nav-item">
+                    <a class="nav-link px-lg-3" href="{{ url_for('admin.admin_users') }}">Team &amp; roles</a>
+                </li>
+                {% endif %}
+                {% if 'api.reports' in (session.get('permissions') or []) and 'api.tickets' in (session.get('permissions') or []) %}
+                <li class="nav-item">
+                    <a class="nav-link px-lg-3" href="{{ url_for('admin.admin_reports') }}">Statistics</a>
+                </li>
+                {% endif %}
+            </ul>
+            <div class="navbar-nav ms-lg-auto align-items-lg-center gap-2 mt-3 mt-lg-0 pb-3 pb-lg-0">
+                <span class="navbar-text small text-white-50 d-none d-sm-inline">{{ session.get('name', 'there') }}</span>
+                {{ role_badge(session.get('role_name', 'user')) }}
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-sm ms-lg-2">Log out</a>
+            </div>
+        </div>
+    </div>
+</nav>
+{% else %}
+<nav class="navbar navbar-expand-lg sd-navbar shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-semibold d-flex align-items-center gap-2" href="{{ url_for('auth.login') }}">
+            <span class="sd-logo-dot"></span>
+            Smart Campus · Service Desk
+        </a>
+        <div class="ms-auto d-flex gap-2">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-sm">Log in</a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-sm text-primary">Register</a>
+        </div>
+    </div>
+</nav>
+{% endif %}
+
+<main class="container sd-main flex-grow-1 py-4 py-md-5">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="sd-footer py-4 mt-auto">
+    <div class="container small text-center text-white-50">
+        Smart Campus — submit tickets and track progress across campus services.
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

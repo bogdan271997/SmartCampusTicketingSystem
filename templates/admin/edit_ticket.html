@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit ticket — Smart Campus{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="mb-3">
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="sd-back-link">&larr; {% if 'users.manage' in (session.get('permissions') or []) %}Back to admin overview{% else %}Back to all tickets{% endif %}</a>
+        </div>
+        <div class="card sd-card border-0 shadow-sm">
+            <div class="card-body p-4 p-md-5">
+                <h1 class="h4 mb-4">Edit ticket #{{ ticket[0] }}</h1>
+
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Title</label>
+                        <input type="text" name="title" class="form-control" value="{{ ticket[1] }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Description</label>
+                        <textarea name="description" class="form-control" rows="5" required>{{ ticket[2] }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Resolution</label>
+                        <textarea name="resolution" class="form-control" rows="4" placeholder="Summary for the requester when closing or completing work (or attach files below).">{% if ticket[3] %}{{ ticket[3] }}{% endif %}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Resolution attachments <span class="text-muted fw-normal">(optional)</span></label>
+                        <input type="file" name="resolution_files" class="form-control" multiple accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.csv,.md,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.odt,.ods">
+                        <p class="form-text text-muted small mb-0">Saved with this update; visible on the ticket detail page.</p>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Status</label>
+                            <select name="status_id" class="form-select" required>
+                                {% for s in statuses %}
+                                <option value="{{ s[0] }}" {% if s[0] == ticket[4] %}selected{% endif %}>{{ s[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Priority</label>
+                            {% set p = (ticket[5] or 'Medium') %}
+                            <select name="priority" class="form-select">
+                                <option value="Low" {% if p == 'Low' %}selected{% endif %}>Low</option>
+                                <option value="Medium" {% if p == 'Medium' %}selected{% endif %}>Medium</option>
+                                <option value="High" {% if p == 'High' %}selected{% endif %}>High</option>
+                                <option value="Urgent" {% if p == 'Urgent' %}selected{% endif %}>Urgent</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Assign to</label>
+                            <select name="assigned_to" class="form-select">
+                                <option value="unassigned" {% if not ticket[6] %}selected{% endif %}>Unassigned</option>
+                                {% for u in assign_users %}
+                                <option value="{{ u[0] }}" {% if ticket[6] == u[0] %}selected{% endif %}>
+                                    {{ u[1] }} ({{ u[3]|capitalize }}) — {{ u[2] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary sd-btn-primary">Save changes</button>
+                        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

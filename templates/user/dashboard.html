@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import status_badge, priority_badge %}
+
+{% block title %}My tickets — Smart Campus{% endblock %}
+
+{% block content %}
+<div class="sd-page-header mb-4">
+    <div>
+        <p class="sd-kicker mb-1">Workspace</p>
+        <h1 class="sd-page-title mb-0">My tickets</h1>
+        <p class="sd-page-sub text-muted mb-0">Everything you have submitted, newest first.</p>
+    </div>
+    <a href="{{ url_for('user.create_ticket') }}" class="btn btn-primary btn-lg sd-btn-primary shadow-sm">New ticket</a>
+</div>
+
+<form method="get" action="{{ url_for('user.user_dashboard') }}" class="card sd-card border-0 shadow-sm mb-3">
+    <div class="card-body py-3 d-flex flex-wrap align-items-end gap-3">
+        <div class="flex-grow-1" style="max-width: 20rem;">
+            <label class="form-label small text-muted mb-1" for="sd-my-status">Filter by status</label>
+            <select name="status" id="sd-my-status" class="form-select" onchange="this.form.submit()">
+                <option value="">All statuses</option>
+                {% for s in statuses %}
+                <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if status_filter %}
+        <a href="{{ url_for('user.user_dashboard') }}" class="btn btn-outline-secondary btn-sm">Clear filter</a>
+        {% endif %}
+    </div>
+</form>
+
+<div class="card sd-card border-0 shadow-sm">
+    <div class="card-body p-0">
+        {% if tickets %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle sd-table">
+                <thead>
+                    <tr>
+                        <th scope="col" class="ps-4">ID</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Priority</th>
+                        <th scope="col">Created</th>
+                        <th scope="col" class="pe-4 text-end"> </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                    <tr class="sd-table-row">
+                        <td class="ps-4 text-muted small">#{{ ticket[0] }}</td>
+                        <td class="fw-medium"><a href="{{ url_for('user.ticket_detail', ticket_id=ticket[0]) }}" class="sd-link">{{ ticket[1] }}</a></td>
+                        <td>{{ status_badge(ticket[2]) }}</td>
+                        <td>{{ priority_badge(ticket[4]) }}</td>
+                        <td class="text-muted small">{{ ticket[3].strftime('%d %b %Y, %H:%M') if ticket[3] else '—' }}</td>
+                        <td class="pe-4 text-end">
+                            <a href="{{ url_for('user.ticket_detail', ticket_id=ticket[0]) }}" class="btn btn-sm btn-outline-primary">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-5 text-center text-muted">
+            <p class="mb-2">You have not submitted any tickets yet.</p>
+            <a href="{{ url_for('user.create_ticket') }}" class="btn btn-primary">Create your first ticket</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

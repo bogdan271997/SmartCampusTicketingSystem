@@ -1,0 +1,61 @@
+{% macro status_badge(status_name) -%}
+{% set s = (status_name or '')|trim|lower %}
+{% if s == 'pending' %}
+<span class="sd-badge sd-badge-pending">Pending</span>
+{% elif s == 'open' %}
+<span class="sd-badge sd-badge-open">Open</span>
+{% elif s == 'in progress' %}
+<span class="sd-badge sd-badge-progress">In progress</span>
+{% elif s == 'closed' %}
+<span class="sd-badge sd-badge-closed">Closed</span>
+{% elif s == 'on hold' %}
+<span class="sd-badge sd-badge-hold">On hold</span>
+{% elif s == 'cancelled' %}
+<span class="sd-badge sd-badge-cancelled">Cancelled</span>
+{% else %}
+<span class="sd-badge sd-badge-unknown">{{ status_name }}</span>
+{% endif %}
+{%- endmacro %}
+
+{% macro role_badge(role_name) -%}
+{% set r = (role_name or 'user')|trim|lower %}
+{% if r == 'admin' %}
+<span class="sd-role sd-role-admin">Admin</span>
+{% elif r == 'technician' %}
+<span class="sd-role sd-role-technician">Service desk technician</span>
+{% else %}
+<span class="sd-role sd-role-user">User</span>
+{% endif %}
+{%- endmacro %}
+
+{% macro priority_badge(priority) -%}
+{% if not priority %}
+<span class="sd-prio sd-prio-medium">Medium</span>
+{% else %}
+{% set p = priority|trim|lower %}
+{% if p == 'low' %}
+<span class="sd-prio sd-prio-low">Low</span>
+{% elif p == 'high' %}
+<span class="sd-prio sd-prio-high">High</span>
+{% elif p == 'urgent' %}
+<span class="sd-prio sd-prio-urgent">Urgent</span>
+{% else %}
+<span class="sd-prio sd-prio-medium">{{ priority }}</span>
+{% endif %}
+{% endif %}
+{%- endmacro %}
+
+{% macro attachment_list(files) -%}
+{% if files %}
+<ul class="list-unstyled small mb-0 sd-attach-list">
+    {% for a in files %}
+    <li class="mb-1">
+        <a href="{{ url_for('user.attachment_download', attachment_id=a.id) }}">{{ a.name }}</a>
+        {% if a.size is not none and a.size > 0 %}
+        <span class="text-muted">({{ (a.size / 1024)|round(1) }} KB)</span>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+{%- endmacro %}

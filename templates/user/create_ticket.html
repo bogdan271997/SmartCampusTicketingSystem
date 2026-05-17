@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}New ticket — Smart Campus{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="sd-page-header mb-4 flex-column flex-sm-row align-items-start align-items-sm-center">
+            <div>
+                <p class="sd-kicker mb-1">Create</p>
+                <h1 class="sd-page-title mb-0">New ticket</h1>
+                <p class="sd-page-sub text-muted mb-0">Describe the issue so the team can help quickly.</p>
+            </div>
+        </div>
+
+        <div class="card sd-card border-0 shadow-sm">
+            <div class="card-body p-4 p-md-5">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label class="form-label fw-medium">Title</label>
+                        <input type="text" name="title" class="form-control form-control-lg" required placeholder="Short summary of the problem">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-medium">Priority</label>
+                        <select name="priority" class="form-select">
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                            <option value="Urgent">Urgent</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-medium">Description</label>
+                        <textarea name="description" class="form-control" rows="6" required placeholder="Steps to reproduce, error messages, what you expected…"></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-medium">Attachments <span class="text-muted fw-normal">(optional)</span></label>
+                        <input type="file" name="attachments" class="form-control" multiple accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.csv,.md,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.odt,.ods">
+                        <p class="form-text text-muted mb-0">Up to 10 files, 8 MB each. Allowed: documents, images, spreadsheets, PDFs, ZIP.</p>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-primary sd-btn-primary">Submit ticket</button>
+                        <a href="{{ url_for('user.user_dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

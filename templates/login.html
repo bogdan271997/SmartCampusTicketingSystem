@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Log in — Smart Campus{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+        <div class="card sd-card border-0 shadow-sm">
+            <div class="card-body p-4 p-md-5">
+                <p class="sd-kicker text-center mb-2">Welcome back</p>
+                <h2 class="mb-4 text-center sd-page-title">Log in</h2>
+
+                <form method="POST" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Email</label>
+                        <input type="email" name="email" class="form-control" required autocomplete="username">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-medium">Password</label>
+                        <input type="password" name="password" class="form-control" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary sd-btn-primary w-100">Log in</button>
+                </form>
+
+                <p class="text-center text-muted small mt-4 mb-0">
+                    No account?
+                    <a href="{{ url_for('auth.register') }}">Create one</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

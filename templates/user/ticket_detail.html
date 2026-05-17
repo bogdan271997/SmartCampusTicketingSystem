@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import status_badge, priority_badge, attachment_list %}
+
+{% block title %}Ticket #{{ t[0] }} — Smart Campus{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    {% if 'dashboard.admin' in (session.get('permissions') or []) %}
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="sd-back-link">&larr; {% if 'users.manage' in (session.get('permissions') or []) %}Back to admin overview{% else %}Back to all tickets{% endif %}</a>
+    {% else %}
+    <a href="{{ url_for('user.user_dashboard') }}" class="sd-back-link">&larr; Back to my tickets</a>
+    {% endif %}
+</div>
+
+<div class="card sd-card border-0 shadow-sm overflow-hidden mb-4">
+    <div class="sd-ticket-header px-4 py-4 text-white">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <p class="small text-white-50 mb-1">Ticket #{{ t[0] }}</p>
+                <h1 class="h3 mb-0 fw-semibold">{{ t[1] }}</h1>
+            </div>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                {{ status_badge(t[4]) }}
+                {{ priority_badge(t[6]) }}
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <dl class="row mb-4 small">
+            <dt class="col-sm-3 text-muted">Submitted by</dt>
+            <dd class="col-sm-9">{{ t[8] }} <span class="text-muted">({{ t[9] }})</span></dd>
+            <dt class="col-sm-3 text-muted">Assigned to</dt>
+            <dd class="col-sm-9">{% if t[12] %}{{ t[12] }} <span class="text-muted">({{ t[13] }})</span>{% else %}<span class="text-muted">Unassigned</span>{% endif %}</dd>
+            <dt class="col-sm-3 text-muted">Created</dt>
+            <dd class="col-sm-9">{{ t[5].strftime('%d %B %Y at %H:%M') if t[5] else '—' }}</dd>
+        </dl>
+        <h2 class="h6 text-uppercase text-muted mb-2">Description</h2>
+        <div class="sd-description text-break mb-3">{{ t[2] }}</div>
+        {% if ticket_files %}
+        <div class="mb-4">
+            <h3 class="h6 text-muted mb-2">Attachments</h3>
+            {{ attachment_list(ticket_files) }}
+        </div>
+        {% endif %}
+
+        {% if t[3] or resolution_files %}
+        <h2 class="h6 text-uppercase text-muted mb-2">Resolution</h2>
+        <p class="text-muted small mb-0">Final summary for the requester (especially when the ticket is closed).</p>
+        {% if t[3] %}
+        <div class="sd-description text-break border rounded p-3 bg-light mt-2">{{ t[3] }}</div>
+        {% endif %}
+        {% if resolution_files %}
+        <div class="mt-3">
+            <h3 class="h6 text-muted mb-2">Resolution attachments</h3>
+            {{ attachment_list(resolution_files) }}
+        </div>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="card sd-card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+        <h2 class="h6 text-uppercase text-muted mb-3">Activity &amp; remarks</h2>
+        {% if remarks %}
+        <ul class="list-unstyled mb-0">
+            {% for r in remarks %}
+            <li class="mb-3 pb-3 border-bottom border-light-subtle">
+                <div class="small text-muted mb-1">{{ r[2].strftime('%d %b %Y, %H:%M') if r[2] else '' }} · <span class="fw-medium text-body">{{ r[3] }}</span></div>
+                {% if r[1] %}<div class="text-break">{{ r[1] }}</div>{% endif %}
+                {% set ra = remark_files.get(r[0], []) %}
+                {% if ra %}
+                <div class="mt-2">
+                    <span class="small text-muted d-block mb-1">Attachments</span>
+                    {{ attachment_list(ra) }}
+                </div>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted small mb-0">No remarks yet.</p>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('user.ticket_add_remark', ticket_id=t[0]) }}" class="mt-4" enctype="multipart/form-data">
+            <label class="form-label fw-medium">Add a remark</label>
+            <textarea name="remark" class="form-control mb-2" rows="3" placeholder="Updates, questions, or notes for this ticket…"></textarea>
+            <div class="mb-2">
+                <label class="form-label small text-muted mb-1">Attachments <span class="fw-normal">(optional)</span></label>
+                <input type="file" name="remark_files" class="form-control form-control-sm" multiple accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.csv,.md,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.odt,.ods">
+            </div>
+            <p class="small text-muted mb-2">Add text and/or at least one file.</p>
+            <button type="submit" class="btn btn-sm btn-primary">Post remark</button>
+        </form>
+    </div>
+</div>
+
+{% if staff_can_edit %}
+<div class="card sd-card border-0 shadow-sm border-primary border-opacity-25">
+    <div class="card-body p-4">
+        <h2 class="h6 text-uppercase text-muted mb-2">Manage ticket</h2>
+        <p class="small text-muted mb-3">Set status (e.g. pending review, in progress, on hold, closed). Before <strong>closing</strong>, provide a <strong>resolution</strong> (text and/or attachments).</p>
+        <form method="POST" action="{{ url_for('user.ticket_staff_update', ticket_id=t[0]) }}" enctype="multipart/form-data">
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Status</label>
+                    <select name="status_id" class="form-select" required>
+                        {% for s in statuses %}
+                        <option value="{{ s[0] }}" {% if s[0] == t[10] %}selected{% endif %}>{{ s[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Assign to</label>
+                    <select name="assigned_to" class="form-select">
+                        <option value="unassigned" {% if not t[11] %}selected{% endif %}>Unassigned</option>
+                        {% for u in assignment_choices %}
+                        <option value="{{ u[0] }}" {% if t[11] == u[0] %}selected{% endif %}>
+                            {{ u[1] }} ({{ u[3]|capitalize }}) — {{ u[2] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <p class="small text-muted mb-0 mt-1">Pick who is handling this ticket (any campus account).</p>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-medium">Resolution</label>
+                <textarea name="resolution" class="form-control" rows="4" placeholder="Summary for the requester when closing or completing work (or attach files below).">{{ t[3] or '' }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-medium">Resolution attachments <span class="text-muted fw-normal">(optional)</span></label>
+                <input type="file" name="resolution_files" class="form-control" multiple accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.csv,.md,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.odt,.ods">
+                <p class="form-text text-muted mb-0">Use when closing or documenting outcomes with screenshots, PDFs, etc.</p>
+            </div>
+            <button type="submit" class="btn btn-primary sd-btn-primary">Save status &amp; resolution</button>
+            <a href="{{ url_for('admin.admin_edit_ticket', ticket_id=t[0]) }}" class="btn btn-outline-secondary ms-2">Full edit (title, description…)</a>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

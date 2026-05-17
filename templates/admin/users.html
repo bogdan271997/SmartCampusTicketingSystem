@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import role_badge %}
+
+{% block title %}Team &amp; roles — Smart Campus{% endblock %}
+
+{% block content %}
+<div class="sd-page-header mb-4">
+    <div>
+        <p class="sd-kicker mb-1">Administration</p>
+        <h1 class="sd-page-title mb-0">Team &amp; roles</h1>
+        <p class="sd-page-sub text-muted mb-0">Who can sign in and which role they have (admin, service desk technician, or user).</p>
+    </div>
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-primary">Back to overview</a>
+</div>
+
+<div class="card sd-card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle sd-table">
+                <thead>
+                    <tr>
+                        <th scope="col" class="ps-4">ID</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Role</th>
+                        <th scope="col" class="pe-4">Change role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td class="ps-4 text-muted small">#{{ u[0] }}</td>
+                        <td class="fw-medium">{{ u[1] }}</td>
+                        <td class="text-muted">{{ u[2] }}</td>
+                        <td>{{ role_badge(u[4]) }}</td>
+                        <td class="pe-4">
+                            <div class="d-flex flex-column gap-2 align-items-stretch" style="max-width: 14rem;">
+                                <form method="POST" action="{{ url_for('admin.admin_users') }}" class="d-flex flex-column gap-2">
+                                    <input type="hidden" name="user_id" value="{{ u[0] }}">
+                                    <select name="role_id" class="form-select form-select-sm">
+                                        {% for rid, rname in roles %}
+                                        <option value="{{ rid }}" {% if u[3] == rid %}selected{% endif %}>{{ rname|capitalize }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                                </form>
+                                {% if u[0]|int != session.get('user_id')|int %}
+                                <form method="POST" action="{{ url_for('admin.admin_delete_user', user_id=u[0]) }}" onsubmit="return confirmDeleteUser();">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger w-100">Delete</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

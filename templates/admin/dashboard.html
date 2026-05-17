@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import status_badge, priority_badge %}
+{% set perms = session.get('permissions') or [] %}
+{% set is_full_admin = 'users.manage' in perms %}
+{% set show_ticket_actions = 'tickets.edit_any' in perms or 'tickets.delete' in perms %}
+
+{% block title %}{% if is_full_admin %}Admin{% else %}All tickets{% endif %} — Smart Campus{% endblock %}
+
+{% block content %}
+<div class="sd-page-header mb-4">
+    <div>
+        <p class="sd-kicker mb-1">{% if is_full_admin %}Administration{% else %}Service desk{% endif %}</p>
+        <h1 class="sd-page-title mb-0">{% if is_full_admin %}Operations overview{% else %}All tickets{% endif %}</h1>
+        <p class="sd-page-sub text-muted mb-0">{% if is_full_admin %}Queue health, assignments, and workflow across the team.{% else %}Review and update every request in the system — newest first.{% endif %}</p>
+    </div>
+    {% if 'api.reports' in perms and 'api.tickets' in perms %}
+    <a href="{{ url_for('admin.admin_reports') }}" class="btn btn-outline-primary align-self-end">Statistics</a>
+    {% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card sd-stat border-0 shadow-sm h-100 sd-stat-total">
+            <div class="card-body">
+                <p class="small text-white-50 text-uppercase mb-1">All tickets</p>
+                <p class="display-6 fw-semibold mb-0">{{ total_tickets }}</p>
+            </div>
+        </div>
+    </div>
+    {% for row in status_counts %}
+    <div class="col-sm-6 col-xl-3">
+        <a href="{{ url_for('admin.admin_dashboard', status=row[0]) }}" class="text-decoration-none">
+            <div class="card sd-stat sd-stat-chip border-0 shadow-sm h-100">
+                <div class="card-body d-flex justify-content-between align-items-center gap-2">
+                    <div>
+                        <p class="small text-muted text-uppercase mb-0">{{ row[0] }}</p>
+                        <p class="h4 mb-0 fw-semibold">{{ row[1] }}</p>
+                    </div>
+                    {{ status_badge(row[0]) }}
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<form method="get" action="{{ url_for('admin.admin_dashboard') }}" class="card sd-card border-0 shadow-sm mb-3">
+    <div class="card-body py-3 d-flex flex-wrap align-items-end gap-3">
+        <div class="flex-grow-1" style="max-width: 20rem;">
+            <label class="form-label small text-muted mb-1" for="sd-queue-status">Filter by status</label>
+            <select name="status" id="sd-queue-status" class="form-select" onchange="this.form.submit()">
+                <option value="">All statuses</option>
+                {% for s in statuses %}
+                <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if status_filter %}
+        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">Clear filter</a>
+        {% endif %}
+    </div>
+</form>
+
+<div class="card sd-card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="p-4 pb-0">
+            <h2 class="h5 mb-0">{% if is_full_admin %}All tickets{% else %}Ticket list{% endif %}</h2>
+            <p class="small text-muted mb-0">{% if is_full_admin %}Every request in the system — newest activity first.{% else %}Open a ticket to view details{% if show_ticket_actions %} or edit it{% endif %}.{% endif %}</p>
+        </div>
+        {% if tickets %}
+        <div class="table-responsive mt-3">
+            <table class="table table-hover mb-0 align-middle sd-table">
+                <thead>
+                    <tr>
+                        <th scope="col" class="ps-4">ID</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Submitted by</th>
+                        <th scope="col">Assigned to</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Priority</th>
+                        <th scope="col">Created</th>
+                        {% if show_ticket_actions %}
+                        <th scope="col" class="pe-4 text-end">Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                    <tr>
+                        <td class="ps-4 text-muted small">#{{ ticket[0] }}</td>
+                        <td class="fw-medium">
+                            <a href="{{ url_for('user.ticket_detail', ticket_id=ticket[0]) }}" class="sd-link">{{ ticket[1] }}</a>
+                        </td>
+                        <td>{{ ticket[2] }}</td>
+                        <td class="text-muted small">{% if ticket[6] %}{{ ticket[6] }}{% else %}—{% endif %}</td>
+                        <td>{{ status_badge(ticket[3]) }}</td>
+                        <td>{{ priority_badge(ticket[5]) }}</td>
+                        <td class="text-muted small">{{ ticket[4].strftime('%d %b %Y') if ticket[4] else '—' }}</td>
+                        {% if show_ticket_actions %}
+                        <td class="pe-4 text-end text-nowrap">
+                            {% if 'tickets.edit_any' in perms %}
+                            <a href="{{ url_for('admin.admin_edit_ticket', ticket_id=ticket[0]) }}" class="btn btn-sm btn-outline-warning">Edit</a>
+                            {% endif %}
+                            {% if 'tickets.delete' in perms %}
+                            <form method="POST" action="{{ url_for('admin.admin_delete_ticket', ticket_id=ticket[0]) }}" class="d-inline" onsubmit="return confirmDelete();">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-5 text-center text-muted">
+            <p class="mb-0">No tickets in the system yet — or nothing matches this filter.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
