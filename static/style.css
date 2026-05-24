@@ -35,7 +35,7 @@
     height: 10px;
     border-radius: 50%;
     background: linear-gradient(145deg, #38bdf8, var(--sd-accent));
-    box-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
+    box-shadow: 0 0 12px rgba(125, 211, 252, 0.7);
 }
 
 .sd-main {
