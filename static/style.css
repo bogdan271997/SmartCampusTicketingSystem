@@ -19,6 +19,19 @@
     background: linear-gradient(105deg, var(--sd-navy) 0%, var(--sd-navy-mid) 55%, #0c4a6e 100%);
 }
 
+.sd-navbar .navbar-brand {
+    color: #7dd3fc !important;
+}
+
+.sd-navbar .navbar-brand:hover {
+    color: #bae6fd !important;
+}
+
+.sd-navbar .sd-brand-sub {
+    color: #93c5fd !important;
+    opacity: 1 !important;
+}
+
 .sd-navbar .nav-link {
     color: rgba(255, 255, 255, 0.88) !important;
     font-weight: 500;
