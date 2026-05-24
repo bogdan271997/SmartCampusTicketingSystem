@@ -237,30 +237,30 @@ This page is HTML only; data comes from JSON endpoints (`/api/tickets`, `/api/re
 ```mermaid
 flowchart TD
     subgraph guest [Guest]
-        L[/login]
-        R[/register]
+        L["/login"]
+        R["/register"]
     end
 
-    subgraph user [User role]
-        UD[/user/dashboard]
-        CT[/tickets/create]
-        TD[/tickets/id]
+    subgraph userRole [User role]
+        UD["/user/dashboard"]
+        CT["/tickets/create"]
+        TD["/tickets/id"]
     end
 
     subgraph tech [Technician]
-        AD[/admin/dashboard]
-        TD2[/tickets/id]
-        ET[/admin/ticket/edit/id]
+        AD["/admin/dashboard"]
+        TD2["/tickets/id"]
+        ET["/admin/ticket/edit/id"]
     end
 
-    subgraph admin [Admin]
-        AD2[/admin/dashboard]
-        AU[/admin/users]
-        AR[/admin/reports]
-        ET2[/admin/ticket/edit/id]
+    subgraph adminRole [Admin]
+        AD2["/admin/dashboard"]
+        AU["/admin/users"]
+        AR["/admin/reports"]
+        ET2["/admin/ticket/edit/id"]
     end
 
-    ROOT[/] --> L
+    ROOT["/"] --> L
     L -->|login user| UD
     L -->|login admin or tech| AD
     R -->|register| L
